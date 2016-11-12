@@ -1,0 +1,83 @@
+body {
+	background: #eef2f4;
+	width: 1080px;
+	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+	font-size: 14px;
+	line-height: 20px;
+}
+
+.title {
+	background: #fff;
+	font-size: 18px;
+	line-height: 24px;
+	padding: 20px;
+	margin-bottom: 10px;
+}
+
+.kanban {
+	background: #fff;
+	padding: 15px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.kanban-column {
+	width: 210px;
+	padding-right: 15px;
+	border-left: 1px solid #dfe0e3;
+}
+
+.kanban-column-title {
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: bold;
+	padding: 10px 15px;
+	background: #acf2fa;
+	border-radius: 3px;
+}
+
+.kanban-column-title:hover {
+	background: #e1f095;	
+}
+
+.kanban-column-price {
+	font-size: 26px;
+	padding: 20px;
+}
+
+.kanban-item {
+	padding: 12px 10px;
+	border: 1px solid #dfe0e3;
+	border-left: 4px solid #acf2fa;
+	border-radius: 3px;
+	margin-bottom: 5px;
+	cursor: pointer;
+}
+
+.kanban-item:hover {
+	border-left-color: #e1f095;
+}
+
+.kanban-item div {
+	margin-bottom: 5px;	
+}
+
+.kanban-item-name {
+	font-weight: bold;
+}
+
+.kanban-item-price {
+	color: #535c6a;
+	font-size: 16px;
+}
+
+.kanban-item-author-link {
+	color: #2660c0;
+	text-decoration: none;
+}
+
+.kanban-item-date {
+	font-size: 12px;
+	color: #8e8e8e;
+}
