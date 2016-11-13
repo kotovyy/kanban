@@ -34,7 +34,6 @@ body {
 	font-weight: bold;
 	padding: 10px 15px;
 	background: #acf2fa;
-	border-radius: 3px;
 }
 
 .kanban-column-title:hover {

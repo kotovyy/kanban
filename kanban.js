@@ -1,3 +1,54 @@
+"use strict";
+
+/*KanbanGrid
+- column = { id: new KanbanColumn }
+- items = { id: new KanbanItem }
+*addItem
+*addColumn
+* moveItem
+* draw
+
+KanbanColumn
+- items: []
+render
+addItem
+
+KanbanItem*/
+
+class KanbanGrid {
+    constructor(options) {
+        this.container = options.container;
+        this.columns = options.columns;
+        this.items = options.items;
+        this.init();
+    };
+
+    init() {
+        this.addColumn(this.container);
+    }
+
+    addColumn() {
+        var container = this.container;
+        this.columns.forEach(function() {
+            var div = document.createElement('div');
+            div.className = "kanban-column";
+            div.innerHTML = `<div class="kanban-column-title"></div>
+            <div class="kanban-column-price"></div>`;
+
+            container.appendChild(div);
+        });
+    };
+}
+
+
+/*        var columnTitles = document.querySelectorAll(".kanban-column-title");
+        columnTitles = Array.prototype.slice.call(columnTitles, 0); //преобразовываем в массив
+
+        for (i = 0; i < this.columns.length; i++) {
+            this.columns[i].name = ;
+        }
+    }*/
+
 var kanban = new KanbanGrid({
     columns: [
         {
@@ -155,24 +206,5 @@ var kanban = new KanbanGrid({
             mail: "info@bitrix.ru"
         }
     ],
-    events: {
-        onTitleChange: function (column) { },
-        onItemChange: function (item) { }
-    },
-
     container: document.getElementById("kanban")
 });
-KanbanGrid
-- column = { id: new KanbanColumn }
-- items = { id: new KanbanItem }
-*addItem
-*addColumn
-* moveItem
-* draw
-
-KanbanColumn
-- items: []
-render
-addItem
-
-KanbanItem
