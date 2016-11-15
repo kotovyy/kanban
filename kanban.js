@@ -29,25 +29,13 @@ class KanbanGrid {
 
     addColumn() {
         var container = this.container;
-        this.columns.forEach(function() {
-            var div = document.createElement('div');
-            div.className = "kanban-column";
-            div.innerHTML = `<div class="kanban-column-title"></div>
-            <div class="kanban-column-price"></div>`;
-
-            container.appendChild(div);
+        this.columns.forEach(function(column) {
+            console.log(column.name);
+            console.log(container);
+            container.insertAdjacentHTML('beforeend', '<div class="kanban-column"><div class="kanban-column-title">' + column.name + '</div><div class="kanban-column-price"></div></div>');
         });
     };
 }
-
-
-/*        var columnTitles = document.querySelectorAll(".kanban-column-title");
-        columnTitles = Array.prototype.slice.call(columnTitles, 0); //преобразовываем в массив
-
-        for (i = 0; i < this.columns.length; i++) {
-            this.columns[i].name = ;
-        }
-    }*/
 
 var kanban = new KanbanGrid({
     columns: [
