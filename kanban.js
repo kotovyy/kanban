@@ -24,16 +24,32 @@ class KanbanGrid {
     };
 
     init() {
-        this.addColumn(this.container);
+        this.addColumn();
+        this.addItem();
     }
 
     addColumn() {
         var container = this.container;
         this.columns.forEach(function(column) {
-            console.log(column.name);
-            console.log(container);
+            column = new KanbanColumn(column, container);
             container.insertAdjacentHTML('beforeend', '<div class="kanban-column"><div class="kanban-column-title">' + column.name + '</div><div class="kanban-column-price"></div></div>');
         });
+    };
+
+    addItem() {
+        var container = this.container;
+        this.items.forEach(function(item) {
+            //item = new KanbanItem(item, container);
+            container.insertAdjacentHTML('beforeend', '<div class="kanban-item"><div class="kanban-item-name">' + item.name + '</div><div class="kanban-item-price">' + item.price + '</div><div class="kanban-item-author"><a class="kanban-item-author-link" href="#">' + item.autorName + '</a></div><div class="kanban-item-date">' + item.date + '</div></div>');
+        });        
+    }
+}
+
+class KanbanColumn {
+    constructor(options, container) {
+        this.id = options.id;
+        this.name = options.name;
+        this.container = container;
     };
 }
 
