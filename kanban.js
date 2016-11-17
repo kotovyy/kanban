@@ -38,7 +38,7 @@ class KanbanGrid {
 
     addItem() {
         this.items.forEach(function(item) {
-            //item = new KanbanItem(item, container);
+            item = new KanbanItem(item);
             var columnItem = document.getElementById(item.columnId);
             columnItem.insertAdjacentHTML('beforeend', '<div class="kanban-item"><div class="kanban-item-name">' + item.name + '</div><div class="kanban-item-price">' + item.price + '</div><div class="kanban-item-author"><a class="kanban-item-author-link" href="#">' + item.autorName + '</a></div><div class="kanban-item-date">' + item.date + '</div></div>');
         });        
@@ -53,6 +53,22 @@ class KanbanColumn {
     };
 }
 
+class KanbanItem {
+    constructor(options) {
+        this.id = options.id;
+        this.name = options.name;
+        this.columnId = options.columnId;
+        this.price = options.price;
+        this.autorName = options.autorName;
+        this.date = options.date;
+
+        console.log("все создалось");
+    };
+}
+
+
+
+//Создание
 var kanban = new KanbanGrid({
     columns: [
         {
