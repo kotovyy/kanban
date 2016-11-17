@@ -32,15 +32,15 @@ class KanbanGrid {
         var container = this.container;
         this.columns.forEach(function(column) {
             column = new KanbanColumn(column, container);
-            container.insertAdjacentHTML('beforeend', '<div class="kanban-column"><div class="kanban-column-title">' + column.name + '</div><div class="kanban-column-price"></div></div>');
+            container.insertAdjacentHTML('beforeend', '<div class="kanban-column" id=' + column.id + '><div class="kanban-column-title">' + column.name + '</div><div class="kanban-column-price"></div></div>');
         });
     };
 
     addItem() {
-        var container = this.container;
         this.items.forEach(function(item) {
             //item = new KanbanItem(item, container);
-            container.insertAdjacentHTML('beforeend', '<div class="kanban-item"><div class="kanban-item-name">' + item.name + '</div><div class="kanban-item-price">' + item.price + '</div><div class="kanban-item-author"><a class="kanban-item-author-link" href="#">' + item.autorName + '</a></div><div class="kanban-item-date">' + item.date + '</div></div>');
+            var columnItem = document.getElementById(item.columnId);
+            columnItem.insertAdjacentHTML('beforeend', '<div class="kanban-item"><div class="kanban-item-name">' + item.name + '</div><div class="kanban-item-price">' + item.price + '</div><div class="kanban-item-author"><a class="kanban-item-author-link" href="#">' + item.autorName + '</a></div><div class="kanban-item-date">' + item.date + '</div></div>');
         });        
     }
 }
