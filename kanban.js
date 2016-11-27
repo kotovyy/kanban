@@ -18,40 +18,123 @@ KanbanItem*/
 class KanbanGrid {
     constructor(options) {
         this.container = options.container;
-        this.columns = options.columns;
-        this.items = options.items;
+        this.layout = {
+
+        };
+
+		this.columns = { /* id => KanbanColumn*/ };
+		this.items = { /* id => KanbanItem*/ }
+
+        this.loadData(options);
+
         this.init();
     };
 
-    init() {
-        this.addColumn();
-        this.addItem();
+
+    loadData(json) {
+    	options
+    	//addColumn
+    	//addItemm
+    	if (options && Array.isArray(options.columns))
+    	{
+    		options.columns.forEach(function(column) {
+    			this.addColumn(column);
+    		}, this);
+    	}
     }
 
-    addColumn() {
-        var container = this.container;
-        this.columns.forEach(function(column) {
-            column = new KanbanColumn(column, container);
-            container.insertAdjacentHTML('beforeend', '<div class="kanban-column" id=' + column.id + '><div class="kanban-column-title">' + column.name + '</div><div class="kanban-column-price"></div></div>');
-        });
+    init() {
+
+    }
+
+    draw: function() {
+    	//цикл по колонкам
+    	//вызов render
+    	this.columns
+    }
+
+    moveItem(sourceItem, column, targetItem = null) {
+
+    }
+
+
+    addColumn(options) {
+
+    	let column = new KanbanColumn();
+    	this.columns[column.getId()] = column;
     };
 
-    addItem() {
-        this.items.forEach(function(item) {
-            item = new KanbanItem(item);
-            var columnItem = document.getElementById(item.columnId);
-            columnItem.insertAdjacentHTML('beforeend', '<div class="kanban-item"><div class="kanban-item-name">' + item.name + '</div><div class="kanban-item-price">' + item.price + '</div><div class="kanban-item-author"><a class="kanban-item-author-link" href="#">' + item.autorName + '</a></div><div class="kanban-item-date">' + item.date + '</div></div>');
-        });        
+    getColumn(id) {
+    	return this.columns[id] ? this.columns[id] : null;
+    }
+
+    removeColumn() {
+
+    }
+
+    addItem(options) {
+
+    	var column = this.getColumn(item.columnId);
+    	if (!column)
+    	{
+    		return null;
+    	}
+
+    	let item = new KanbanItem();
+    	this.items[item.getId()] = item;
+    	column.addItem(item);
+    }
+
+    removeItem(item) {
+    	//удалить из delete this.items[item.getId()]
+    	//item.getColumn().removeItem(item);
     }
 }
+
+//класс KanbanColumn
 
 class KanbanColumn {
     constructor(options, container) {
         this.id = options.id;
         this.name = options.name;
         this.container = container;
+        this.items = [];
     };
+
+    getId() {
+    	return this.id;
+    }
+
+    addItem(item) {
+    	if (item instanceof KanbanItem)
+    	{
+    		this.items.push(item);
+    	}
+    }
+
+    //удаление item
+	removeItem (item) {
+		this.items = this.items.filter((currentItem, index) => {
+			return currentItem !== item.index;
+		});
+	}
+
+
+    render() {
+
+    	let result = `<div class="column-container">`;
+    	this.items.forEach(function(item) {
+    		result += item.render();
+    	}, this);
+
+    	result += `</div>`;
+
+    	return result;
+    }
+
 }
+
+//класс KanbanItem
 
 class KanbanItem {
     constructor(options) {
@@ -62,14 +145,48 @@ class KanbanItem {
         this.autorName = options.autorName;
         this.date = options.date;
 
+        this.layout = {
+        	container: null,
+        	input: null,
+        	button: null
+        };
         console.log("все создалось");
-    };
+    }
+
+    render() {
+
+    	if (this.layout.container)
+    	{
+    		return this.layout.container;
+    	}
+
+    	this.layout.container = document.createElement("div");
+    	this.layout.container.className = "";
+    	this.layout.input = document.createElement("input");
+    	this.layout.container.appendChild(this.layout.input);
+
+
+    	return `<div class="kanban-column-title">' + column.name + '</div><div class="kanban-column-price"></div></div>`;
+    }
 }
 
 
+var kanban2 = new KanbanGrid();
+
+kanban2.addColumn({});
+kanban2.addItem({});
 
 //Создание
 var kanban = new KanbanGrid({
+	events: {
+		onTitleChanged: function(column) {
+			//ajax
+		},
+
+		onItemChanged: function(item) {
+			//ajax
+		}
+	},
     columns: [
         {
             id: 1,
@@ -228,3 +345,5 @@ var kanban = new KanbanGrid({
     ],
     container: document.getElementById("kanban")
 });
+
+kanban.draw();
