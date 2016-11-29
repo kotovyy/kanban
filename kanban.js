@@ -22,59 +22,50 @@ class KanbanGrid {
         	container: null      	
         };
 
-		this.columns = { /* id => KanbanColumn*/ };
-		this.items = { /* id => KanbanItem*/ }
+		this.columns = options.columns || { /* id => KanbanColumn*/ };
+		this.items = options.items || { /* id => KanbanItem*/ };
         this.loadData(options);
+
     };
 
 
-    loadData(json) {
-
-    	// options правильно переданы?
-    	var options = {};
-    	options.columns = json.columns;
-        options.items = json.items;
+    loadData(options) {     
 
     	if (options && Array.isArray(options.columns))
     	{
-    		options.columns.forEach(function(column) {
+    		this.columns.forEach(function(column) {
     			this.addColumn(column);
     		}, this);
     	}
-    	this.columns = options.columns;
-
+	
     	if (options && Array.isArray(options.items))
     	{
-    		options.items.forEach(function(item) {
+    		this.items.forEach(function(item) {
     			this.addItem(item);
     		}, this);
     	}
-    	this.items = options.items;
-		this.items.forEach(function(item) {
-			console.log(item);	
-		}, this);
 
-    }
+	}
 
 	draw() {
 		this.columns.forEach(function(column) {
-			column.render;
-		});
+			column = new KanbanColumn(column, this.container);
+			column.render(this.items);
 
+		}, this);
 	}
 
     moveItem(sourceItem, column, targetItem = null) {
 
     }
 
-    addColumn(options) {
-    	var column = new KanbanColumn(options, this.container);
-    	this.columns[column.getId()] = column; 
+    addColumn(column) {
+    	column = new KanbanColumn(column, this.container);
     };
 
     getColumn(id) {
-    	if(this.columns[id - 1]){
-    		return this.columns[id - 1];
+    	if(this.columns[id]){
+    		return this.columns[id];
     	}
     	return null;
     }
@@ -83,18 +74,17 @@ class KanbanGrid {
 
     }
 
-    addItem(options) {
-    	
-    	var item = new KanbanItem(options);
-    	this.items[item.getId()] = item;
+    addItem(item) {
 
-    	var currentColumn = this.getColumn(item.columnId);
-    	console.log(currentColumn);
+    	item = new KanbanItem(item);
+
+    	var currentColumn = this.getColumn(item.columnId - 1);
     	if (!currentColumn)
     	{
     		return null;
     	}
-		currentColumn = new KanbanColumn(options, this.container)
+
+		currentColumn = new KanbanColumn(currentColumn, this.container)
     	currentColumn.addItem(item);
     }
 
@@ -102,17 +92,21 @@ class KanbanGrid {
     	//удалить из delete this.items[item.getId()]
     	//item.getColumn().removeItem(item);
     }
+
+
 }
 
 //класс KanbanColumn
 
 class KanbanColumn {
-    constructor(options, container) {
-        this.id = options.id;
-        this.name = options.name;
+    constructor(column, container) {
+        this.id = column.id;
+        this.name = column.name;
         this.container = container;
         this.items = [];
-        var render = this.render();
+
+        //var render = this.render();
+
     };
 
     getId() {
@@ -134,10 +128,18 @@ class KanbanColumn {
 	}
 
 
-    render() {
+    render(items) {
     	let result = `<div class="kanban-column"><div class="kanban-column-title"></div><div class="kanban-column-price"></div>`;
-    	this.items.forEach(function(item) {
-    		result += item.render;
+    	console.log("начало");
+
+    	console.log(items);
+
+    	items.forEach(function(item) {
+    		console.log("в рендер заходим");
+    		item = new KanbanItem(item);
+    		var inner = item.render();
+    		console.log(inner);
+    		result += inner.outerHTML;
     	}, this);
 
     	result += `</div>`;
@@ -157,13 +159,12 @@ class KanbanItem {
         this.price = options.price;
         this.autorName = options.autorName;
         this.date = options.date;
-        var render = this.render();
 
         this.layout = {
-        	container: null,
-        	input: null,
-        	button: null
+        	container: null
         };
+
+        //var render = this.render();
     }
 
     getId() {
@@ -171,19 +172,48 @@ class KanbanItem {
     }
 
     render() {
-		console.log("добрались");
-/*    	if (this.layout.container)
+    	if (this.layout.container)
     	{
     		return this.layout.container;
-    	}*/
+    	}
 
-/*    	this.layout.container = document.createElement("div");
-    	this.layout.container.className = "";
-    	this.layout.input = document.createElement("input");
-    	this.layout.container.appendChild(this.layout.input);*/
+    	this.layout.container = document.createElement("div");
+    	this.layout.container.className = "kanban-item";
 
+    	this.layout.name = document.createElement("div");
+    	this.layout.name.className = "kanban-item-name";
+    	this.layout.name.textContent = this.name;
+    	this.layout.container.appendChild(this.layout.name);
 
-    	return `<div class="kanban-column-title">' + column.name + '</div><div class="kanban-column-price"></div></div>`;
+    	this.layout.price = document.createElement("div");
+    	this.layout.price.className = "kanban-item-price";
+    	this.layout.name.textContent = this.price;
+    	this.layout.container.appendChild(this.layout.price);
+
+    	this.layout.author = document.createElement("div");
+    	this.layout.author.className = "kanban-item-author";
+    	this.layout.container.appendChild(this.layout.author);
+
+    	this.layout.authorLink = document.createElement("a");
+    	this.layout.authorLink.className = "kanban-item-author-link";
+    	this.layout.authorLink.textContent = this.autorName;
+    	this.layout.author.appendChild(this.layout.authorLink);
+
+    	this.layout.date = document.createElement("div");
+    	this.layout.date.className = "kanban-item-date";
+    	this.layout.date.textContent = this.date;
+    	this.layout.container.appendChild(this.layout.date);	
+
+    	return this.layout.container;
+
+/*    	<div class="kanban-item">
+	    	<div class="kanban-item-name">' + item.name + '</div>
+	    	<div class="kanban-item-price">' + item.price + '</div>
+	    	<div class="kanban-item-author">
+	    		<a class="kanban-item-author-link" href="#">' + item.autorName + '</a>
+	    	</div>
+	    	<div class="kanban-item-date">+ item.date + '</div>
+    	</div>';*/
     }
 }
 
