@@ -1,20 +1,5 @@
 "use strict";
 
-/*KanbanGrid
-- column = { id: new KanbanColumn }
-- items = { id: new KanbanItem }
-*addItem
-*addColumn
-* moveItem
-* draw
-
-KanbanColumn
-- items: []
-render
-addItem
-
-KanbanItem*/
-
 class KanbanGrid {
     constructor(options) {
         this.container = options.container;
@@ -51,7 +36,6 @@ class KanbanGrid {
 		this.columns.forEach(function(column) {
 			column = new KanbanColumn(column, this.container);
 			column.render(this.items);
-
 		}, this);
 	}
 
@@ -70,15 +54,17 @@ class KanbanGrid {
     	return null;
     }
 
-    removeColumn() {
-
+    removeColumn(removedColumn) {
+		this.columns = this.columns.filter((column, index) => {
+			return index !== removedColumn.index;
+		});
     }
 
     addItem(item) {
 
     	item = new KanbanItem(item);
 
-    	var currentColumn = this.getColumn(item.columnId - 1);
+    	var currentColumn = this.getColumn(item.columnId);
     	if (!currentColumn)
     	{
     		return null;
@@ -89,9 +75,11 @@ class KanbanGrid {
     }
 
     removeItem(item) {
-    	//удалить из delete this.items[item.getId()]
-    	//item.getColumn().removeItem(item);
+
+    	delete this.items[item.getId()]
+    	this.columns[item.columnId].removeItem(item);
     }
+
 
 
 }
@@ -104,9 +92,6 @@ class KanbanColumn {
         this.name = column.name;
         this.container = container;
         this.items = [];
-
-        //var render = this.render();
-
     };
 
     getId() {
@@ -121,25 +106,25 @@ class KanbanColumn {
     }
 
     //удаление item
-	removeItem (item) {
-		this.items = this.items.filter((currentItem, index) => {
-			return currentItem !== item.index;
+	removeItem (removedItem) {
+		this.items = this.items.filter((item, index) => {
+			return index !== removedItem.index;
 		});
 	}
 
 
     render(items) {
-    	let result = `<div class="kanban-column"><div class="kanban-column-title"></div><div class="kanban-column-price"></div>`;
-    	console.log("начало");
 
-    	console.log(items);
+    	let result = '<div class="kanban-column"><div class="kanban-column-title">' + this.name + '</div><div class="kanban-column-price"></div>';
 
     	items.forEach(function(item) {
-    		console.log("в рендер заходим");
+
     		item = new KanbanItem(item);
-    		var inner = item.render();
-    		console.log(inner);
-    		result += inner.outerHTML;
+
+    		if(this.id == item.columnId) {
+	     		var inner = item.render();
+	    		result += inner.outerHTML;  			
+    		}
     	}, this);
 
     	result += `</div>`;
@@ -163,8 +148,6 @@ class KanbanItem {
         this.layout = {
         	container: null
         };
-
-        //var render = this.render();
     }
 
     getId() {
@@ -172,8 +155,7 @@ class KanbanItem {
     }
 
     render() {
-    	if (this.layout.container)
-    	{
+    	if (this.layout.container) {
     		return this.layout.container;
     	}
 
@@ -187,7 +169,7 @@ class KanbanItem {
 
     	this.layout.price = document.createElement("div");
     	this.layout.price.className = "kanban-item-price";
-    	this.layout.name.textContent = this.price;
+    	this.layout.price.textContent = this.price;
     	this.layout.container.appendChild(this.layout.price);
 
     	this.layout.author = document.createElement("div");
@@ -205,21 +187,16 @@ class KanbanItem {
     	this.layout.container.appendChild(this.layout.date);	
 
     	return this.layout.container;
-
-/*    	<div class="kanban-item">
-	    	<div class="kanban-item-name">' + item.name + '</div>
-	    	<div class="kanban-item-price">' + item.price + '</div>
-	    	<div class="kanban-item-author">
-	    		<a class="kanban-item-author-link" href="#">' + item.autorName + '</a>
-	    	</div>
-	    	<div class="kanban-item-date">+ item.date + '</div>
-    	</div>';*/
     }
+
+    getColumnId() {
+    		return this.columnId;
+    	}
 }
 
 //Создание
 var kanban = new KanbanGrid({
-/*	events: {
+	events: {
 		onTitleChanged: function(column) {
 			//ajax
 		},
@@ -227,7 +204,7 @@ var kanban = new KanbanGrid({
 		onItemChanged: function(item) {
 			//ajax
 		}
-	},*/
+	},
     columns: [
         {
             id: 1,
