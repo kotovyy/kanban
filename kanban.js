@@ -2,49 +2,55 @@
 
 class KanbanGrid {
     constructor(options) {
-        this.container = options.container;
         this.layout = {
-        	container: null      	
+        	container: options.container      	
         };
 
-		this.columns = options.columns || { /* id => KanbanColumn*/ };
-		this.items = options.items || { /* id => KanbanItem*/ };
+		this.columns = { /* id => KanbanColumn*/ };
+		this.items = { /* id => KanbanItem*/ };
         this.loadData(options);
-
     };
 
 
-    loadData(options) {     
+    loadData(json) {
 
-    	if (options && Array.isArray(options.columns))
+         this.columns = json.columns; 
+         this.items = json.items;   
+
+    	if (json && Array.isArray(this.columns))
     	{
     		this.columns.forEach(function(column) {
     			this.addColumn(column);
     		}, this);
     	}
 	
-    	if (options && Array.isArray(options.items))
+    	if (json && Array.isArray(this.items))
     	{
     		this.items.forEach(function(item) {
     			this.addItem(item);
     		}, this);
-    	}
+    	} 	
 
 	}
 
 	draw() {
 		this.columns.forEach(function(column) {
-			column = new KanbanColumn(column, this.container);
 			column.render(this.items);
+            column.addPrice(this.items)
 		}, this);
 	}
 
     moveItem(sourceItem, column, targetItem = null) {
-
+    	this.trigger('move', {
+/*    		sourceItem,
+    		column,
+			targetItem*/
+		});
     }
 
     addColumn(column) {
-    	column = new KanbanColumn(column, this.container);
+    	column = new KanbanColumn(column, this.layout.container);
+    	this.columns[column.getId() - 1] = column;
     };
 
     getColumn(id) {
@@ -63,24 +69,37 @@ class KanbanGrid {
     addItem(item) {
 
     	item = new KanbanItem(item);
+    	this.items[item.getId() - 1] = item; 
 
-    	var currentColumn = this.getColumn(item.columnId);
-    	if (!currentColumn)
-    	{
-    		return null;
-    	}
-
-		currentColumn = new KanbanColumn(currentColumn, this.container)
+    	var currentColumn = this.getColumn(item.columnId - 1);
+    	if (!currentColumn) {
+	    	return null;
+	    };
     	currentColumn.addItem(item);
     }
 
     removeItem(item) {
-
-    	delete this.items[item.getId()]
+    	delete this.items[item.getId() - 1];
     	this.columns[item.columnId].removeItem(item);
     }
 
+	/**
+	* Возможность подписываться на событие
+	*/
+	on (name, callback) {
+		this.layout.container.addEventListener(name, callback);
+	}
 
+	/**
+	* Создаем событие
+	*/
+	trigger(name, data) {
+		let widgetEvent = new CustomEvent(name, {
+			bubbles: true,
+			detail: data
+		});
+		this.layout.container.dispatchEvent(widgetEvent);
+	}
 
 }
 
@@ -112,24 +131,44 @@ class KanbanColumn {
 		});
 	}
 
-
     render(items) {
-
     	let result = '<div class="kanban-column"><div class="kanban-column-title">' + this.name + '</div><div class="kanban-column-price"></div>';
 
     	items.forEach(function(item) {
-
-    		item = new KanbanItem(item);
-
-    		if(this.id == item.columnId) {
-	     		var inner = item.render();
-	    		result += inner.outerHTML;  			
-    		}
+    		if(this.id == item.columnId) { 
+    			result += item.render().outerHTML;		
+    		};
     	}, this);
 
     	result += `</div>`;
     	this.container.innerHTML += result;
+
     	return result;
+    }
+
+    addPrice(items) {
+    	let currentItem = null;
+		let price = null; 
+
+    	items.forEach(function(item) {
+    		if(this.id == item.columnId) {
+
+	    		if(currentItem == item.columnId || item.columnId) {
+		    		price += item.getPrice(); 		
+	    		}
+    			currentItem = item.columnId; 	
+    		};
+    	}, this);
+
+        console.log(price); 
+        return price;
+
+/*    	var prices = document.getElementsByClassName("kanban-column-price");
+    	console.log(prices + " : " + price);
+
+    	for(var i = 0; i < prices.length; i++) {
+    		console.log(prices[i]);
+    	}*/	
     }
 
 }
@@ -150,8 +189,12 @@ class KanbanItem {
         };
     }
 
-    getId() {
+    getId(items) {
     	return this.id;
+    }
+
+    getPrice() {
+    	return this.price;
     }
 
     render() {
@@ -365,3 +408,5 @@ var kanban = new KanbanGrid({
 });
 
 kanban.draw();
+
+
