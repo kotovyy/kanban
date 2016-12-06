@@ -3,7 +3,8 @@
 class KanbanGrid {
     constructor(options) {
         this.layout = {
-        	container: options.container      	
+        	container: options.container,
+            kanban: null      	
         };
 
 		this.columns = { /* id => KanbanColumn*/ };
@@ -14,31 +15,37 @@ class KanbanGrid {
 
     loadData(json) {
 
-         this.columns = json.columns; 
-         this.items = json.items;   
-
-    	if (json && Array.isArray(this.columns))
+    	if (json && Array.isArray(json.columns))
     	{
-    		this.columns.forEach(function(column) {
+    		json.columns.forEach(function(column) {
     			this.addColumn(column);
     		}, this);
     	}
 	
-    	if (json && Array.isArray(this.items))
+    	if (json && Array.isArray(json.items))
     	{
-    		this.items.forEach(function(item) {
+    		json.items.forEach(function(item) {
     			this.addItem(item);
     		}, this);
     	} 	
 
 	}
 
-	draw() {
-		this.columns.forEach(function(column) {
-			column.render(this.items);
-            column.addPrice(this.items)
-		}, this);
-	}
+    draw() {
+
+        //Контейнер канбана
+        this.layout.kanban = document.createElement("div");
+        this.layout.kanban.className = "kanban-container";
+        this.layout.container.appendChild(this.layout.kanban);
+
+        //Обнулить контейнер BX.cleanNode
+        for (let columnId in this.columns)
+        {
+            var column = this.columns[columnId];
+            this.layout.kanban.appendChild(column.render());
+        }
+
+    }
 
     moveItem(sourceItem, column, targetItem = null) {
     	this.trigger('move', {
@@ -50,7 +57,12 @@ class KanbanGrid {
 
     addColumn(column) {
     	column = new KanbanColumn(column, this.layout.container);
-    	this.columns[column.getId() - 1] = column;
+    	this.columns[column.getId()] = column;
+
+        if (this.layout.kanban)
+        {
+            this.draw();
+        }
     };
 
     getColumn(id) {
@@ -69,17 +81,21 @@ class KanbanGrid {
     addItem(item) {
 
     	item = new KanbanItem(item);
-    	this.items[item.getId() - 1] = item; 
+    	this.items[item.getId()] = item; 
 
-    	var currentColumn = this.getColumn(item.columnId - 1);
+    	var currentColumn = this.getColumn(item.columnId);
     	if (!currentColumn) {
 	    	return null;
 	    };
     	currentColumn.addItem(item);
+
+        if (this.layout.kanban) {
+            this.draw();
+        }
     }
 
     removeItem(item) {
-    	delete this.items[item.getId() - 1];
+    	delete this.items[item.getId()];
     	this.columns[item.columnId].removeItem(item);
     }
 
@@ -111,6 +127,12 @@ class KanbanColumn {
         this.name = column.name;
         this.container = container;
         this.items = [];
+
+        this.layout = {
+            container: null,
+            title: null,
+            price: null
+        };
     };
 
     getId() {
@@ -131,44 +153,41 @@ class KanbanColumn {
 		});
 	}
 
-    render(items) {
-    	let result = '<div class="kanban-column"><div class="kanban-column-title">' + this.name + '</div><div class="kanban-column-price"></div>';
+    render() {
 
-    	items.forEach(function(item) {
-    		if(this.id == item.columnId) { 
-    			result += item.render().outerHTML;		
-    		};
-    	}, this);
+        if (!this.layout.container)
+        {
+            this.layout.container = document.createElement("div");
+            this.layout.container.className = "kanban-column";
+            
+            this.layout.title = document.createElement("div");
+            this.layout.title.className = "kanban-column-title";
+            this.layout.container.appendChild(this.layout.title);
 
-    	result += `</div>`;
-    	this.container.innerHTML += result;
+            this.layout.price = document.createElement("div");
+            this.layout.price.className = "kanban-column-price";
+            this.layout.container.appendChild(this.layout.price);
+        }
 
-    	return result;
+        this.layout.title.textContent = this.name;
+        this.layout.price.textContent = this.getTotalPrice();
+
+        this.items.forEach(function(item) {
+            this.layout.container.appendChild(item.render());     
+        }, this);       
+
+
+        return this.layout.container;
+
     }
 
-    addPrice(items) {
-    	let currentItem = null;
-		let price = null; 
+    getTotalPrice() {
+        let total = 0;
+        this.items.forEach(function(item) {
+            total += item.getPrice();
+        }, this);
 
-    	items.forEach(function(item) {
-    		if(this.id == item.columnId) {
-
-	    		if(currentItem == item.columnId || item.columnId) {
-		    		price += item.getPrice(); 		
-	    		}
-    			currentItem = item.columnId; 	
-    		};
-    	}, this);
-
-        console.log(price); 
-        return price;
-
-/*    	var prices = document.getElementsByClassName("kanban-column-price");
-    	console.log(prices + " : " + price);
-
-    	for(var i = 0; i < prices.length; i++) {
-    		console.log(prices[i]);
-    	}*/	
+        return total;
     }
 
 }
@@ -185,7 +204,12 @@ class KanbanItem {
         this.date = options.date;
 
         this.layout = {
-        	container: null
+        	container: null,
+            name: null,
+            price: null,
+            author: null,
+            authorLink: null,
+            date: null
         };
     }
 
@@ -309,7 +333,7 @@ var kanban = new KanbanGrid({
         },
         {
             id: 4,
-            name: "Пменить наполнитель в лотке у кота",
+            name: "Поменить наполнитель в лотке у кота",
             link: "/link",
             columnId: 1,
             price: 750000,
