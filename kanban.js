@@ -28,16 +28,17 @@ class KanbanGrid {
     			this.addItem(item);
     		}, this);
     	} 	
-
 	}
 
     draw() {
 
         //Контейнер канбана
+        if (!this.layout.kanban) {
         this.layout.kanban = document.createElement("div");
         this.layout.kanban.className = "kanban-container";
         this.layout.container.appendChild(this.layout.kanban);
 
+        }
         //Обнулить контейнер BX.cleanNode
         for (let columnId in this.columns)
         {
@@ -47,7 +48,16 @@ class KanbanGrid {
 
     }
 
-    moveItem(sourceItem, column, targetItem = null) {
+    moveItem(sourceItem, pastColumn, futureColumn) {
+        pastColumn = this.columns[pastColumn.id];
+        futureColumn = this.columns[futureColumn.id];
+
+        pastColumn.removeItem(sourceItem);
+        futureColumn.addItem(sourceItem);
+
+        pastColumn.render();
+        futureColumn.render();
+
     	this.trigger('move', {
 /*    		sourceItem,
     		column,
@@ -148,10 +158,15 @@ class KanbanColumn {
 
     //удаление item
 	removeItem (removedItem) {
-		this.items = this.items.filter((item, index) => {
-			return index !== removedItem.index;
-		});
-	}
+        this.items = this.items.filter((item, index) => {
+            console.log(index + " " + removedItem.index);
+            return index !== removedItem.index;
+        });
+
+        this.items.forEach(function(item) {
+            console.log(item);
+        }, this);
+    }
 
     render() {
 
@@ -175,7 +190,6 @@ class KanbanColumn {
         this.items.forEach(function(item) {
             this.layout.container.appendChild(item.render());     
         }, this);       
-
 
         return this.layout.container;
 
@@ -432,5 +446,25 @@ var kanban = new KanbanGrid({
 });
 
 kanban.draw();
+
+kanban.moveItem({
+            id: 1,
+            name: "Продажа оборудования для производства корма",
+            link: "/link",
+            price: 750000,
+            date: "13.05.2016",
+            autorName: "Pavel Rafeev",
+            autorLink: "/user/rafeev",
+            phone: "+79993447474",
+            mail: "info@bitrix.ru"
+        },
+        {
+            id: 2,
+            name: "Переговоры по сделке"
+        },
+        {
+            id: 5,
+            name: "Завершение сделки"
+        });
 
 
