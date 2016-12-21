@@ -49,13 +49,12 @@ class KanbanGrid {
     }
 
     moveItem(sourceItem, pastColumn, futureColumn) {
-        pastColumn = this.columns[pastColumn.id];
         futureColumn = this.columns[futureColumn.id];
-
-        pastColumn.removeItem(sourceItem);
+        sourceItem = this.items[sourceItem.id];
+        
+        this.columns[sourceItem.columnId].removeItem(sourceItem);
         futureColumn.addItem(sourceItem);
 
-        pastColumn.render();
         futureColumn.render();
 
     	this.trigger('move', {
@@ -83,8 +82,8 @@ class KanbanGrid {
     }
 
     removeColumn(removedColumn) {
-		this.columns = this.columns.filter((column, index) => {
-			return index !== removedColumn.index;
+		this.columns = this.columns.filter((column) => {
+			return column.id !== removedColumn.id;
 		});
     }
 
@@ -153,19 +152,16 @@ class KanbanColumn {
     	if (item instanceof KanbanItem)
     	{
     		this.items.push(item);
+
+
     	}
     }
 
     //удаление item
 	removeItem (removedItem) {
-        this.items = this.items.filter((item, index) => {
-            console.log(index + " " + removedItem.index);
-            return index !== removedItem.index;
+        this.items = this.items.filter((item) => {
+            return item.id !== removedItem.id;
         });
-
-        this.items.forEach(function(item) {
-            console.log(item);
-        }, this);
     }
 
     render() {
