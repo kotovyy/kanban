@@ -83,3 +83,22 @@ body {
 	font-size: 12px;
 	color: #8e8e8e;
 }
+
+.kanban-column-input {
+	padding: 10px 15px;
+	border: 2px solid #acf2fa;
+	font-size: 18px;
+	line-height: 24px;
+	color: #000;
+	background: #fff;
+	outline: 0;
+}
+
+.kanban-column-button {
+	width: 100%;
+	padding: 10px 33px;
+	cursor: pointer;
+	background: #acf2fa;
+	border: 0;
+	outline: 0;
+}

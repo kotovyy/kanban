@@ -10,8 +10,8 @@ class KanbanGrid {
 		this.columns = { /* id => KanbanColumn*/ };
 		this.items = { /* id => KanbanItem*/ };
         this.loadData(options);
+        this.initEvents();
     };
-
 
     loadData(json) {
 
@@ -30,6 +30,15 @@ class KanbanGrid {
     	} 	
 	}
 
+	//Установка обработчиков событий 
+	initEvents() {
+		this.layout.container.addEventListener('click', this.onCLick.bind(this));
+	}
+
+	onCLick() {
+		console.log("пока все норм");
+	}
+
     draw() {
 
         //Контейнер канбана
@@ -39,7 +48,10 @@ class KanbanGrid {
         this.layout.container.appendChild(this.layout.kanban);
 
         }
-        //Обнулить контейнер BX.cleanNode
+
+        //Обнулить контейнер канбана
+        BX.cleanNode(this.layout.kanban);
+
         for (let columnId in this.columns)
         {
             var column = this.columns[columnId];
@@ -48,22 +60,28 @@ class KanbanGrid {
 
     }
 
-    moveItem(sourceItem, pastColumn, futureColumn) {
-        pastColumn = this.columns[pastColumn.id];
+    moveItem(sourceItem, futureColumn, targetItem = null) {
         futureColumn = this.columns[futureColumn.id];
+        sourceItem = this.items[sourceItem.id];
 
-        pastColumn.removeItem(sourceItem);
+        this.columns[sourceItem.columnId].removeItem(sourceItem);
         futureColumn.addItem(sourceItem);
 
-        pastColumn.render();
+        this.columns[sourceItem.columnId].render();
         futureColumn.render();
+
+        if (targetItem !== null) {
+        	targetItem = this.items[targetItem.id];
+    		var parent = targetItem.layout.container.parentNode;
+    		parent.insertBefore(sourceItem.layout.container, targetItem.layout.container);
+    	}
 
     	this.trigger('move', {
 /*    		sourceItem,
     		column,
 			targetItem*/
 		});
-    }
+}
 
     addColumn(column) {
     	column = new KanbanColumn(column, this.layout.container);
@@ -149,24 +167,23 @@ class KanbanColumn {
     	return this.id;
     }
 
-    addItem(item) {
+    addItem(item, beforeItem) {
     	if (item instanceof KanbanItem)
     	{
     		this.items.push(item);
+    	}
+    	if (beforeItem) {
+    		var parent = beforeItem.layout.container.parentNode;
+    		parent.insertBefore(item.layout.container, beforeItem.layout.container);
     	}
     }
 
     //удаление item
 	removeItem (removedItem) {
-        this.items = this.items.filter((item, index) => {
-            console.log(index + " " + removedItem.index);
-            return index !== removedItem.index;
-        });
-
-        this.items.forEach(function(item) {
-            console.log(item);
-        }, this);
-    }
+        this.items = this.items.filter((item) => {
+            return item.id !== removedItem.id;
+        });     
+	}
 
     render() {
 
@@ -182,6 +199,7 @@ class KanbanColumn {
             this.layout.price = document.createElement("div");
             this.layout.price.className = "kanban-column-price";
             this.layout.container.appendChild(this.layout.price);
+
         }
 
         this.layout.title.textContent = this.name;
@@ -189,8 +207,8 @@ class KanbanColumn {
 
         this.items.forEach(function(item) {
             this.layout.container.appendChild(item.render());     
-        }, this);       
-
+        }, this);
+     
         return this.layout.container;
 
     }
@@ -448,9 +466,10 @@ var kanban = new KanbanGrid({
 kanban.draw();
 
 kanban.moveItem({
-            id: 1,
-            name: "Продажа оборудования для производства корма",
+            id: 3,
+            name: "Покормить пса новым кормом",
             link: "/link",
+            columnId: 1,
             price: 750000,
             date: "13.05.2016",
             autorName: "Pavel Rafeev",
@@ -459,12 +478,21 @@ kanban.moveItem({
             mail: "info@bitrix.ru"
         },
         {
-            id: 2,
-            name: "Переговоры по сделке"
+            id: 3,
+            name: "Договор"
         },
         {
-            id: 5,
-            name: "Завершение сделки"
-        });
+            id: 6,
+            name: "Позвонить маме",
+            link: "/link",
+            columnId: 3,
+            price: 750000,
+            date: "13.05.2016",
+            autorName: "Pavel Rafeev",
+            autorLink: "/user/rafeev",
+            phone: "+79993447474",
+            mail: "info@bitrix.ru"
+        }
+    );
 
 

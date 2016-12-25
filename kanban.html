@@ -8,9 +8,15 @@
 <body>
 	<div class="main">
 		<div class="title">Активные сделки</div>
-		<div id="kanban" class="kanban"></div>
+		<div id="kanban" class="kanban">
+			<form class="kanban-column-form" action="/echo" method="post">
+				<input class="kanban-column-input" type="text" name="new_title">
+				<button class="kanban-column-button" type="submit">Ok</button>
+			</form>
 		</div>
 	</div>
+	<script type="text/javascript" src="core.js"></script>
+	<script type="text/javascript" src="core_fx.js"></script>
 	<script type="text/javascript" src="kanban.js"></script>
 </body>
 </html>
