@@ -10,7 +10,6 @@ class KanbanGrid {
 		this.columns = { /* id => KanbanColumn*/ };
 		this.items = { /* id => KanbanItem*/ };
         this.loadData(options);
-        this.initEvents();
     };
 
     loadData(json) {
@@ -30,17 +29,7 @@ class KanbanGrid {
     	} 	
 	}
 
-	//Установка обработчиков событий 
-	initEvents() {
-		this.layout.container.addEventListener('click', this.onCLick.bind(this));
-	}
-
-	onCLick() {
-		console.log("пока все норм");
-	}
-
     draw() {
-
         //Контейнер канбана
         if (!this.layout.kanban) {
         this.layout.kanban = document.createElement("div");
@@ -161,7 +150,13 @@ class KanbanColumn {
             title: null,
             price: null
         };
+        
     };
+
+    //Установка обработчиков событий 
+	initEvents() {
+		this.layout.container.addEventListener('click', this.onCLick);	
+	}
 
     getId() {
     	return this.id;
@@ -208,9 +203,11 @@ class KanbanColumn {
         this.items.forEach(function(item) {
             this.layout.container.appendChild(item.render());     
         }, this);
+
+        //Запуск установки обработчиков событий - правильно ли так делать?
+        this.initEvents();
      
         return this.layout.container;
-
     }
 
     getTotalPrice() {
@@ -221,6 +218,28 @@ class KanbanColumn {
 
         return total;
     }
+
+	onCLick(event) {
+		console.log("мы тут");
+		event = event.target;
+		if(event.classList.contains('kanban-column-title')) {
+			event.outerHTML  = `<form class="kanban-column-form" method="post">
+				<input class="kanban-column-input" type="text" name="new_title">
+				<div class="kanban-column-button">Ok</div>
+			</form>`;
+		};
+
+		if(event.classList.contains('kanban-column-button')) {
+			var name = document.querySelector(".kanban-column-input").value;
+			this.setName(name);
+		};	
+	}
+
+	setName(name) {
+		this.name = name;
+		this.layout.name.innerHTML = name;
+		console.log("поменяли имя");	
+	}
 
 }
 
