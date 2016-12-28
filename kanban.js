@@ -155,7 +155,7 @@ class KanbanColumn {
 
     //Установка обработчиков событий 
 	initEvents() {
-		this.layout.container.addEventListener('click', this.onCLick);	
+		this.layout.container.addEventListener('click', this.onCLick.bind(this));	
 	}
 
     getId() {
@@ -220,10 +220,10 @@ class KanbanColumn {
     }
 
 	onCLick(event) {
-		console.log("мы тут");
 		event = event.target;
 		if(event.classList.contains('kanban-column-title')) {
-			event.outerHTML  = `<form class="kanban-column-form" method="post">
+			console.log(event.parentNode);
+			event.outerHTML = `<form class="kanban-column-form" method="post">
 				<input class="kanban-column-input" type="text" name="new_title">
 				<div class="kanban-column-button">Ok</div>
 			</form>`;
@@ -232,15 +232,14 @@ class KanbanColumn {
 		if(event.classList.contains('kanban-column-button')) {
 			var name = document.querySelector(".kanban-column-input").value;
 			this.setName(name);
+			event.parentNode.outerHTML = `<div class="kanban-column-title">` + name + `</div>`;
 		};	
 	}
 
 	setName(name) {
 		this.name = name;
-		this.layout.name.innerHTML = name;
-		console.log("поменяли имя");	
+		this.layout.title.innerHTML = name;	
 	}
-
 }
 
 //класс KanbanItem
