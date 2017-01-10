@@ -85,13 +85,13 @@ body {
 	color: #8e8e8e;
 }
 
-.kanban-column-form {
+.kanban-column-title-textBox {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
 }
 
-.kanban-column-input {
+.kanban-column-title-input {
     padding: 10px 10px;
     border: 2px solid #acf2fa;
     color: #000;
@@ -100,7 +100,8 @@ body {
     box-sizing: border-box;
 }
 
-.kanban-column-button {
+.kanban-column-title-button {
+	width: 100%;
 	font-weight: bold;
 	padding: 10px 9px;
     cursor: pointer;

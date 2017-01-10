@@ -141,7 +141,11 @@ class KanbanColumn {
 
         this.layout = {
             container: null,
+            titleWrapper: null,
             title: null,
+            textBox: null,
+            button: null,
+            input: null,
             price: null
         };
 
@@ -207,9 +211,27 @@ class KanbanColumn {
             this.layout.container = document.createElement("div");
             this.layout.container.className = "kanban-column";
 
+            this.layout.titleWrapper = document.createElement("div");
+            this.layout.titleWrapper.className = "kanban-column-title-wrapper";
+            this.layout.container.appendChild(this.layout.titleWrapper);
+
             this.layout.title = document.createElement("div");
             this.layout.title.className = "kanban-column-title";
-            this.layout.container.appendChild(this.layout.title);
+            this.layout.titleWrapper.appendChild(this.layout.title);
+
+            this.layout.textBox = document.createElement("div");
+            this.layout.textBox.className = "kanban-column-title-textBox";
+            this.layout.titleWrapper.appendChild(this.layout.textBox);
+
+            this.layout.input = document.createElement("input");
+            this.layout.input.className = "kanban-column-title-input";
+            this.layout.input.setAttribute("type", "text");
+            this.layout.textBox.appendChild(this.layout.input);
+
+            this.layout.button = document.createElement("button");
+            this.layout.button.className = "kanban-column-title-button";
+            this.layout.button.textContent = "Ок";
+            this.layout.textBox.appendChild(this.layout.button);
 
             this.layout.price = document.createElement("div");
             this.layout.price.className = "kanban-column-price";
