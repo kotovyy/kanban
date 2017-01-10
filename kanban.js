@@ -4,11 +4,11 @@ class KanbanGrid {
     constructor(options) {
         this.layout = {
         	container: options.container,
-            kanban: null      	
+            kanban: null
         };
 
-		this.columns = { /* id => KanbanColumn*/ };
-		this.items = { /* id => KanbanItem*/ };
+		this.columns = {};
+		this.items = {};
         this.loadData(options);
     };
 
@@ -20,13 +20,13 @@ class KanbanGrid {
     			this.addColumn(column);
     		}, this);
     	}
-	
+
     	if (json && Array.isArray(json.items))
     	{
     		json.items.forEach(function(item) {
     			this.addItem(item);
     		}, this);
-    	} 	
+    	}
 	}
 
     draw() {
@@ -49,21 +49,15 @@ class KanbanGrid {
 
     }
 
-    moveItem(sourceItem, futureColumn, targetItem = null) {
-        futureColumn = this.columns[futureColumn.id];
-        sourceItem = this.items[sourceItem.id];
+    moveItem(sourceItemId, futureColumnId, beforeItemId = null) {
+        let futureColumn = this.columns[futureColumnId];
+        let sourceItem = this.items[sourceItemId];
 
         this.columns[sourceItem.columnId].removeItem(sourceItem);
-        futureColumn.addItem(sourceItem);
+        futureColumn.addItem(sourceItem, beforeItemId);
 
         this.columns[sourceItem.columnId].render();
         futureColumn.render();
-
-        if (targetItem !== null) {
-        	targetItem = this.items[targetItem.id];
-    		var parent = targetItem.layout.container.parentNode;
-    		parent.insertBefore(sourceItem.layout.container, targetItem.layout.container);
-    	}
 
     	this.trigger('move', {
 /*    		sourceItem,
@@ -98,7 +92,7 @@ class KanbanGrid {
     addItem(item) {
 
     	item = new KanbanItem(item);
-    	this.items[item.getId()] = item; 
+    	this.items[item.getId()] = item;
 
     	var currentColumn = this.getColumn(item.columnId);
     	if (!currentColumn) {
@@ -150,34 +144,60 @@ class KanbanColumn {
             title: null,
             price: null
         };
-        
+
     };
 
-    //Установка обработчиков событий 
+    //Установка обработчиков событий
 	initEvents() {
-		this.layout.container.addEventListener('click', this.onCLick.bind(this));	
+		this.layout.container.addEventListener('click', this.onCLick.bind(this));
 	}
 
     getId() {
     	return this.id;
     }
 
-    addItem(item, beforeItem) {
-    	if (item instanceof KanbanItem)
+    addItem(item, beforeItemId) {
+
+		if (!(item instanceof KanbanItem))
+		{
+			return;
+		}
+
+    	if (!beforeItemId)
     	{
+
     		this.items.push(item);
     	}
-    	if (beforeItem) {
-    		var parent = beforeItem.layout.container.parentNode;
-    		parent.insertBefore(item.layout.container, beforeItem.layout.container);
+    	else
+    	{
+    		let beforeItemIndex = -1;
+    		for (let i = 0; i < this.items.length; i++)
+    		{
+    			if (this.items[i].id === beforeItemId)
+    			{
+    				beforeItemIndex = i;
+    				break;
+    			}
+    		}
+
+    		if (beforeItemIndex >= 0)
+    		{
+    			this.items.splice(beforeItemIndex, 0, item);
+    		}
+    		else
+    		{
+    			this.items.push(item);
+    		}
+
     	}
+
     }
 
     //удаление item
 	removeItem (removedItem) {
         this.items = this.items.filter((item) => {
             return item.id !== removedItem.id;
-        });     
+        });
 	}
 
     render() {
@@ -186,7 +206,7 @@ class KanbanColumn {
         {
             this.layout.container = document.createElement("div");
             this.layout.container.className = "kanban-column";
-            
+
             this.layout.title = document.createElement("div");
             this.layout.title.className = "kanban-column-title";
             this.layout.container.appendChild(this.layout.title);
@@ -194,19 +214,16 @@ class KanbanColumn {
             this.layout.price = document.createElement("div");
             this.layout.price.className = "kanban-column-price";
             this.layout.container.appendChild(this.layout.price);
-
+            this.initEvents();
         }
 
         this.layout.title.textContent = this.name;
         this.layout.price.textContent = this.getTotalPrice();
 
         this.items.forEach(function(item) {
-            this.layout.container.appendChild(item.render());     
+            this.layout.container.appendChild(item.render());
         }, this);
 
-        //Запуск установки обработчиков событий - правильно ли так делать?
-        this.initEvents();
-     
         return this.layout.container;
     }
 
@@ -233,12 +250,12 @@ class KanbanColumn {
 			var name = document.querySelector(".kanban-column-input").value;
 			this.setName(name);
 			event.parentNode.outerHTML = `<div class="kanban-column-title">` + name + `</div>`;
-		};	
+		};
 	}
 
 	setName(name) {
 		this.name = name;
-		this.layout.title.innerHTML = name;	
+		this.layout.title.innerHTML = name;
 	}
 }
 
@@ -301,7 +318,7 @@ class KanbanItem {
     	this.layout.date = document.createElement("div");
     	this.layout.date.className = "kanban-item-date";
     	this.layout.date.textContent = this.date;
-    	this.layout.container.appendChild(this.layout.date);	
+    	this.layout.container.appendChild(this.layout.date);
 
     	return this.layout.container;
     }
@@ -483,34 +500,5 @@ var kanban = new KanbanGrid({
 
 kanban.draw();
 
-kanban.moveItem({
-            id: 3,
-            name: "Покормить пса новым кормом",
-            link: "/link",
-            columnId: 1,
-            price: 750000,
-            date: "13.05.2016",
-            autorName: "Pavel Rafeev",
-            autorLink: "/user/rafeev",
-            phone: "+79993447474",
-            mail: "info@bitrix.ru"
-        },
-        {
-            id: 3,
-            name: "Договор"
-        },
-        {
-            id: 6,
-            name: "Позвонить маме",
-            link: "/link",
-            columnId: 3,
-            price: 750000,
-            date: "13.05.2016",
-            autorName: "Pavel Rafeev",
-            autorLink: "/user/rafeev",
-            phone: "+79993447474",
-            mail: "info@bitrix.ru"
-        }
-    );
 
 
