@@ -226,6 +226,7 @@ class KanbanColumn {
             this.layout.input = document.createElement("input");
             this.layout.input.className = "kanban-column-title-input";
             this.layout.input.setAttribute("type", "text");
+            this.layout.input.setAttribute("name", "new_title");
             this.layout.textBox.appendChild(this.layout.input);
 
             this.layout.button = document.createElement("button");
@@ -259,19 +260,17 @@ class KanbanColumn {
     }
 
 	onCLick(event) {
-		event = event.target;
-		if(event.classList.contains('kanban-column-title')) {
-			console.log(event.parentNode);
-			event.outerHTML = `<form class="kanban-column-form" method="post">
-				<input class="kanban-column-input" type="text" name="new_title">
-				<div class="kanban-column-button">Ok</div>
-			</form>`;
+        var target = event.target;
+		if(target.classList.contains('kanban-column-title')) {
+			target.parentNode.classList.toggle('kanban-column-title-wrapper-editable');
+            console.log(target);
+            target.nextElementSibling.childNodes[0].focus();
 		};
 
-		if(event.classList.contains('kanban-column-button')) {
-			var name = document.querySelector(".kanban-column-input").value;
+		if(target.classList.contains('kanban-column-title-button')) {
+			var name = target.previousElementSibling.value;
 			this.setName(name);
-			event.parentNode.outerHTML = `<div class="kanban-column-title">` + name + `</div>`;
+			target.parentNode.parentNode.classList.toggle('kanban-column-title-wrapper-editable');
 		};
 	}
 

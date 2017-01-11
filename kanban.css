@@ -85,10 +85,18 @@ body {
 	color: #8e8e8e;
 }
 
-.kanban-column-title-textBox {
+.kanban-column-title-wrapper-editable .kanban-column-title {
+	display: none;
+}
+
+.kanban-column-title-wrapper-editable .kanban-column-title-textBox {
 	display: flex;
+}		
+
+.kanban-column-title-textBox {
 	flex-direction: row;
 	justify-content: space-between;
+	display: none;
 }
 
 .kanban-column-title-input {
