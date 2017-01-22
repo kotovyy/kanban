@@ -4,7 +4,12 @@ class KanbanGrid {
     constructor(options) {
         this.layout = {
         	container: options.container,
-            kanban: null
+            kanban: null,
+            form: null,
+            inputName: null,
+            inputColumn: null,
+            inputButton: null,
+            inputError: null
         };
 
 		this.columns = {};
@@ -29,17 +34,24 @@ class KanbanGrid {
     	}
 	}
 
+    //Установка обработчиков событий
+    init() {
+        this.layout.container.addEventListener('click', this.onCLickForm.bind(this));
+    }
+
     draw() {
         //Контейнер канбана
         if (!this.layout.kanban) {
-        this.layout.kanban = document.createElement("div");
-        this.layout.kanban.className = "kanban-container";
-        this.layout.container.appendChild(this.layout.kanban);
-
+            this.layout.kanban = document.createElement("div");
+            this.layout.kanban.className = "kanban-container";
+            this.layout.container.appendChild(this.layout.kanban);
         }
 
         //Обнулить контейнер канбана
         BX.cleanNode(this.layout.kanban);
+
+        //Отрисовка формы
+        this.drawForm();
 
         for (let columnId in this.columns)
         {
@@ -47,6 +59,99 @@ class KanbanGrid {
             this.layout.kanban.appendChild(column.render());
         }
 
+        //запуск обработчиков после отрисовки
+        this.init();
+    }
+
+    drawForm(){
+
+        if(!this.layout.form) {
+            this.layout.form = document.createElement("div");
+            this.layout.form.className = "kanban-form";
+            this.layout.container.insertBefore(this.layout.form, this.layout.container.firstChild);
+
+            this.layout.inputName = document.createElement("input");
+            this.layout.inputName.className = "kanban-form-input";
+            this.layout.inputName.setAttribute("type", "text");
+            this.layout.inputName.setAttribute("placeholder", "Название");
+            this.layout.inputName.setAttribute("name", "newItem");
+            this.layout.inputName.setAttribute("id", "newItem");
+            this.layout.form.appendChild(this.layout.inputName);
+
+            this.layout.inputColumn = document.createElement("input");
+            this.layout.inputColumn.className = "kanban-form-input";
+            this.layout.inputColumn.setAttribute("type", "text");
+            this.layout.inputColumn.setAttribute("placeholder", "ID колонки");
+            this.layout.inputColumn.setAttribute("name", "idColumn");
+            this.layout.inputColumn.setAttribute("id", "columnNewItem");
+            this.layout.form.appendChild(this.layout.inputColumn);
+
+            this.layout.inputPrice = document.createElement("input");
+            this.layout.inputPrice.className = "kanban-form-input";
+            this.layout.inputPrice.setAttribute("type", "text");
+            this.layout.inputPrice.setAttribute("placeholder", "Стоимость");
+            this.layout.inputPrice.setAttribute("name", "cost");
+            this.layout.inputPrice.setAttribute("id", "cost");
+            this.layout.form.appendChild(this.layout.inputPrice);
+
+            this.layout.inputButton = document.createElement("button");
+            this.layout.inputButton.className = "kanban-form-button";
+            this.layout.inputButton.textContent = "Добавить";
+            this.layout.form.appendChild(this.layout.inputButton);
+
+            this.layout.inputError = document.createElement("div");
+            this.layout.inputError.className = "kanban-form-error";
+            this.layout.inputError.textContent = "Заполните все поля";
+            this.layout.form.appendChild(this.layout.inputError);
+        };
+
+        return this.layout.form;
+
+    }
+
+    onCLickForm(event) {
+        let target = event.target;
+        if(target.classList.contains('kanban-form-button')) {
+            var newItem = {};
+            newItem.id = Object.keys(this.items).length + 1;
+
+            var newItemColumnId = +document.getElementById('columnNewItem').value;
+            var newItemName = document.getElementById('newItem').value;
+            var newItemPrice = +document.getElementById('cost').value;
+            var errorBlock = document.querySelector(".kanban-form-error");
+
+            if(!(newItemColumnId && newItemName)) {
+                errorBlock.classList.add('kanban-form-error-shown');
+                return;
+            };
+
+            errorBlock.classList.remove('kanban-form-error-shown');
+
+            newItem.columnId = newItemColumnId;
+            newItem.name = newItemName;
+            newItem.price = newItemPrice;
+            newItem.date = this.getCurrentDate();
+            
+            var columnNewItem = this.columns[newItem.columnId];
+
+            this.addItem(newItem);
+            columnNewItem.addItem(newItem);
+
+            columnNewItem.render();
+        }; 
+    }
+
+    getCurrentDate() {
+        var date = new Date();
+        var dd = date.getDate();
+        if (dd < 10) dd = '0' + dd;
+
+        var mm = date.getMonth() + 1;
+        if (mm < 10) mm = '0' + mm;
+
+        var yy = date.getFullYear();
+
+        return dd + '.' + mm + '.' + yy;
     }
 
     moveItem(sourceItemId, futureColumnId, beforeItemId = null) {
@@ -100,9 +205,6 @@ class KanbanGrid {
 	    };
     	currentColumn.addItem(item);
 
-        if (this.layout.kanban) {
-            this.draw();
-        }
     }
 
     removeItem(item) {
@@ -146,7 +248,8 @@ class KanbanColumn {
             textBox: null,
             button: null,
             input: null,
-            price: null
+            price: null,
+            error: null
         };
 
     };
@@ -229,6 +332,11 @@ class KanbanColumn {
             this.layout.input.setAttribute("name", "new_title");
             this.layout.textBox.appendChild(this.layout.input);
 
+            this.layout.error = document.createElement("div");
+            this.layout.error.className = "kanban-column-title-error";
+            this.layout.error.textContent = "Заполните поле";
+            this.layout.textBox.appendChild(this.layout.error);
+
             this.layout.button = document.createElement("button");
             this.layout.button.className = "kanban-column-title-button";
             this.layout.button.textContent = "Ок";
@@ -261,18 +369,27 @@ class KanbanColumn {
 
 	onCLick(event) {
         var target = event.target;
+
 		if(target.classList.contains('kanban-column-title')) {
 			target.parentNode.classList.toggle('kanban-column-title-wrapper-editable');
-            console.log(target);
             target.nextElementSibling.childNodes[0].focus();
 		};
 
 		if(target.classList.contains('kanban-column-title-button')) {
-			var name = target.previousElementSibling.value;
+            var newTitleInput = target.previousElementSibling.previousElementSibling;
+            var newTitle = target.previousElementSibling.previousElementSibling.value;
+
+            if(!newTitle) {
+                target.previousElementSibling.classList.add('kanban-column-title-error-shown');
+                newTitleInput.focus();
+                return;
+            };
+            target.previousElementSibling.classList.remove('kanban-column-title-error-shown');
+    		var name = newTitle;
 			this.setName(name);
 			target.parentNode.parentNode.classList.toggle('kanban-column-title-wrapper-editable');
 		};
-	}
+    }
 
 	setName(name) {
 		this.name = name;
@@ -306,7 +423,10 @@ class KanbanItem {
     }
 
     getPrice() {
-    	return this.price;
+        if(this.price) {
+        	return this.price;
+        }
+        return this.price = 0;
     }
 
     render() {

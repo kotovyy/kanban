@@ -12,6 +12,9 @@ body {
 	line-height: 24px;
 	padding: 20px;
 	margin-bottom: 10px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
 }
 
 .kanban-container {
@@ -91,6 +94,7 @@ body {
 
 .kanban-column-title-wrapper-editable .kanban-column-title-textBox {
 	display: flex;
+	position: relative;
 }		
 
 .kanban-column-title-textBox {
@@ -99,7 +103,7 @@ body {
 	display: none;
 }
 
-.kanban-column-title-input {
+.kanban-column-title-input, .kanban-form-input {
     padding: 10px 10px;
     border: 2px solid #acf2fa;
     color: #000;
@@ -108,7 +112,11 @@ body {
     box-sizing: border-box;
 }
 
-.kanban-column-title-button {
+.kanban-form-input {
+	margin-right: 20px ;
+}
+
+.kanban-column-title-button, .kanban-form-button {
 	width: 100%;
 	font-weight: bold;
 	padding: 10px 9px;
@@ -117,3 +125,68 @@ body {
     border: 0;
     outline: 0;
     box-sizing: border-box;
+}
+
+.kanban-form-button {
+	width: auto;
+}
+
+.kanban-form {
+	padding: 20px;
+	margin-bottom: 10px;
+	background: #fff;
+	display: flex;
+}
+
+.kanban-column-title-error {
+	position: absolute;
+	border: 2px solid #f97496;
+	z-index: 100;
+	background: #fff;
+	top: 52px;
+	left: 55px;
+	padding: 10px;
+	display: none;
+}
+
+.kanban-form-error {
+	border: 2px solid #f97496;
+	background: #fff;
+	padding: 10px;
+	margin-left: 20px;
+	position: relative;
+	display: none;
+}
+
+.kanban-form-error-shown {
+	display: block;
+}
+
+.kanban-form-error::before {
+	content: "";
+	width: 0;
+	height: 0;
+	border: 10px solid transparent; 
+	border-right-color: #f97496;  
+	border-left: 0;
+	position: absolute;
+	top: 9px;
+	left: -11px;
+}
+
+.kanban-column-title-error::before {
+	content: "";
+	width: 0;
+	height: 0;
+	border: 10px solid transparent; 
+	border-bottom-color: #f97496;  
+	border-top: 0;
+	position: absolute;
+	top: -11px;
+	left: 0;
+}
+
+.kanban-column-title-error-shown {
+	display: block;
+}
+
