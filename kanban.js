@@ -421,6 +421,8 @@ class KanbanItem {
         this.autorName = options.autorName;
         this.date = options.date;
 
+        //var dragObj = null;
+
         this.layout = {
         	container: null,
             name: null,
@@ -474,12 +476,58 @@ class KanbanItem {
     	this.layout.date.textContent = this.date;
     	this.layout.container.appendChild(this.layout.date);
 
+		this.layout.container.addEventListener('dragstart', this.dragStart.bind(this), false);
+		this.layout.container.addEventListener('dragover', this.dragOver.bind(this), false);
+		this.layout.container.addEventListener('drop', this.drop.bind(this), false);
+		this.layout.container.addEventListener('dragend', this.dragEnd.bind(this), false);
+
+		this.layout.container.setAttribute("draggable", "true");
+		this.layout.container.style.cursor = "move";
+
     	return this.layout.container;
-    }
+    };
 
     getColumnId() {
     		return this.columnId;
-    	}
+    };
+
+
+    //Начинаем квн
+
+//начинаем перетаскивание объекта
+	dragStart(e) {
+		e.target.style.opacity = 0.4; 
+
+		var dragObj = this;
+		console.log(dragObj);
+		//устанавливаем тип действия и записываем данные переносимого объекта
+		e.dataTransfer.effectAllowed = 'move';
+		e.dataTransfer.setData('text/html', this.innerHTML);
+
+	}
+
+	dragOver(e) {
+		e.preventDefault(); 
+		e.dataTransfer.dropEffect = 'move'; //указатель браузера принимает нужный вид при переносе
+		return false;
+	}
+
+	drop(e) {
+		e.preventDefault();
+
+		console.log(dragObj);
+		if (dragObj != this) {
+			dragObj.innerHTML = this.innerHTML;
+			this.innerHTML = e.dataTransfer.getData('text/html');
+		}
+		return false;
+	}
+
+	//окончание переноса
+	dragEnd(e) {
+		e.target.style.opacity = 1;
+	}
+
 }
 
 //Создание
