@@ -145,13 +145,13 @@ class KanbanGrid {
             newItem.name = newItemName;
             newItem.price = newItemPrice;
             newItem.date = this.getCurrentDate();
-            
+
             var columnNewItem = this.columns[newItem.columnId];
 
             this.addItem(newItem);
             columnNewItem.render();
 
-        }; 
+        };
     }
 
     getCurrentDate() {
@@ -182,7 +182,7 @@ class KanbanGrid {
     		column,
 			targetItem*/
 		});
-}
+	}
 
     addColumn(column) {
     	column = new KanbanColumn(column, this.layout.container);
@@ -192,7 +192,7 @@ class KanbanGrid {
         {
             this.draw();
         }
-    };
+    }
 
     getColumn(id) {
     	if(this.columns[id]){
@@ -212,7 +212,11 @@ class KanbanGrid {
     	item = new KanbanItem(item);
     	this.items[item.getId()] = item;
 
+    	item.setKanbanGrid(this);
+
     	var currentColumn = this.getColumn(item.columnId);
+    	currentColumn.setKanbanGrid(this);
+
     	if (!currentColumn) {
 	    	return null;
 	    };
@@ -265,6 +269,8 @@ class KanbanColumn {
             error: null
         };
 
+        this.kanban = null;
+
     };
 
     //Установка обработчиков событий
@@ -274,6 +280,10 @@ class KanbanColumn {
 
     getId() {
     	return this.id;
+    }
+
+    setKanbanGrid(kanban) {
+    	this.kanban = kanban;
     }
 
     addItem(item, beforeItemId) {
@@ -358,6 +368,9 @@ class KanbanColumn {
             this.layout.price = document.createElement("div");
             this.layout.price.className = "kanban-column-price";
             this.layout.container.appendChild(this.layout.price);
+
+
+
             this.initEvents();
         }
 
@@ -368,7 +381,48 @@ class KanbanColumn {
             this.layout.container.appendChild(item.render());
         }, this);
 
+        if(this.items.length == 0) {
+        	this.layout.container.addEventListener('drop', this.drop.bind(this), false);
+			this.layout.container.addEventListener('dragend', this.dragEnd.bind(this), false);
+			this.layout.container.addEventListener('dragenter', this.dragEnter.bind(this), false);
+			this.layout.container.addEventListener('dragover', this.dragOver.bind(this), false);
+        }
+        this.layout.container.removeEventListener('drop', this.drop.bind(this), false);
+		this.layout.container.removeEventListener('dragend', this.dragEnd.bind(this), false);
+		this.layout.container.removeEventListener('dragenter', this.dragEnter.bind(this), false);
+		this.layout.container.removeEventListener('dragover', this.dragOver.bind(this), false);
+
         return this.layout.container;
+    }
+
+    drop(e) {
+		e.preventDefault();
+		var data = e.dataTransfer.getData('obj');
+    	console.log("drop колонка", data);
+
+    	if(this.items.length !== 0) {
+    		console.log(e);
+    		var targetItem = kanban.items[data].layout.container.nextElementSibling;
+    		
+    		//this.kanban.moveItem(data, this.id, targetItem);
+    	}
+		this.kanban.moveItem(data, this.id);
+
+    	kanban.items[data].layout.container.style.opacity = 1;
+    }
+
+	dragOver(e) {
+		e.preventDefault();
+		e.dataTransfer.dropEffect = 'move'; //указатель браузера принимает нужный вид при переносе
+		return false;
+	}
+
+    dragEnd(e) {
+    	//console.log("dragend колонка");   	
+    }
+
+    dragEnter(e) {
+		e.preventDefault();
     }
 
     getTotalPrice() {
@@ -421,8 +475,6 @@ class KanbanItem {
         this.autorName = options.autorName;
         this.date = options.date;
 
-        //var dragObj = null;
-
         this.layout = {
         	container: null,
             name: null,
@@ -431,6 +483,12 @@ class KanbanItem {
             authorLink: null,
             date: null
         };
+
+        this.kanban = null;
+    }
+
+    setKanbanGrid(kanban) {
+    	this.kanban = kanban;
     }
 
     getId(items) {
@@ -480,6 +538,8 @@ class KanbanItem {
 		this.layout.container.addEventListener('dragover', this.dragOver.bind(this), false);
 		this.layout.container.addEventListener('drop', this.drop.bind(this), false);
 		this.layout.container.addEventListener('dragend', this.dragEnd.bind(this), false);
+		this.layout.container.addEventListener('dragenter', this.dragEnter.bind(this), false);
+		this.layout.container.addEventListener('dragleave', this.dragLeave.bind(this), false);
 
 		this.layout.container.setAttribute("draggable", "true");
 		this.layout.container.style.cursor = "move";
@@ -488,7 +548,7 @@ class KanbanItem {
     };
 
     getColumnId() {
-    		return this.columnId;
+    	return this.columnId;
     };
 
 
@@ -496,36 +556,50 @@ class KanbanItem {
 
 //начинаем перетаскивание объекта
 	dragStart(e) {
-		e.target.style.opacity = 0.4; 
-
-		var dragObj = this;
-		console.log(dragObj);
+		e.target.style.opacity = 0.4;
+		this.kanban.dragObj = this;
 		//устанавливаем тип действия и записываем данные переносимого объекта
 		e.dataTransfer.effectAllowed = 'move';
-		e.dataTransfer.setData('text/html', this.innerHTML);
+
+		var idData = this.kanban.dragObj.getId();
+		e.dataTransfer.setData('obj', idData);
 
 	}
 
 	dragOver(e) {
-		e.preventDefault(); 
+		e.preventDefault();
 		e.dataTransfer.dropEffect = 'move'; //указатель браузера принимает нужный вид при переносе
 		return false;
+	}
+
+	dragLeave(e) {
+		//this.layout.container.classList.toggle("add-border");
 	}
 
 	drop(e) {
 		e.preventDefault();
 
-		console.log(dragObj);
-		if (dragObj != this) {
-			dragObj.innerHTML = this.innerHTML;
-			this.innerHTML = e.dataTransfer.getData('text/html');
-		}
+		var dataGet = e.dataTransfer.getData('obj');
+		console.log("drop item", e);
+
+		var dragObj = this.kanban.dragObj;
+		this.kanban.moveItem(dragObj.getId(), this.columnId, this.getId());
+		
+		this.kanban.dragObj.layout.container.style.opacity = 1;
+		this.layout.container.classList.remove("add-border");
 		return false;
 	}
 
-	//окончание переноса
+	dragEnter(e) {
+		e.preventDefault();
+		if(this.kanban.dragObj != this) {
+			this.layout.container.classList.add("add-border");
+		}
+	}
+
 	dragEnd(e) {
-		e.target.style.opacity = 1;
+		this.layout.container.style.opacity = 1;
+		this.layout.container.classList.remove("add-border");
 	}
 
 }

@@ -58,6 +58,10 @@ body {
 	cursor: pointer;
 }
 
+.add-border {
+	border: 2px dashed #5de9f9;
+}
+
 .kanban-item:hover {
 	border-left-color: #e1f095;
 }
