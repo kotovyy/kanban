@@ -384,12 +384,12 @@ class KanbanColumn {
         if(this.items.length == 0) {
         	this.layout.container.addEventListener('drop', this.drop.bind(this), false);
 			this.layout.container.addEventListener('dragend', this.dragEnd.bind(this), false);
-			this.layout.container.addEventListener('dragenter', this.dragEnter.bind(this), false);
+			//this.layout.container.addEventListener('dragenter', this.dragEnter.bind(this), false);
 			this.layout.container.addEventListener('dragover', this.dragOver.bind(this), false);
         }
         this.layout.container.removeEventListener('drop', this.drop.bind(this), false);
 		this.layout.container.removeEventListener('dragend', this.dragEnd.bind(this), false);
-		this.layout.container.removeEventListener('dragenter', this.dragEnter.bind(this), false);
+		//this.layout.container.removeEventListener('dragenter', this.dragEnter.bind(this), false);
 		this.layout.container.removeEventListener('dragover', this.dragOver.bind(this), false);
 
         return this.layout.container;
@@ -397,15 +397,11 @@ class KanbanColumn {
 
     drop(e) {
 		e.preventDefault();
-		var data = e.dataTransfer.getData('obj');
-    	console.log("drop колонка", data);
 
-    	if(this.items.length !== 0) {
-    		console.log(e);
-    		var targetItem = kanban.items[data].layout.container.nextElementSibling;
-    		
-    		//this.kanban.moveItem(data, this.id, targetItem);
-    	}
+        //записываем  в переменную id переносимого объекта
+		var data = e.dataTransfer.getData('obj');
+
+        console.log("drop column", this.id, data);
 		this.kanban.moveItem(data, this.id);
 
     	kanban.items[data].layout.container.style.opacity = 1;
@@ -417,12 +413,13 @@ class KanbanColumn {
 		return false;
 	}
 
-    dragEnd(e) {
-    	//console.log("dragend колонка");   	
-    }
-
     dragEnter(e) {
 		e.preventDefault();
+        console.log("dragEnter column", this.id);
+    }
+
+    dragEnd(e){
+        console.log("dragend");
     }
 
     getTotalPrice() {
@@ -552,8 +549,6 @@ class KanbanItem {
     };
 
 
-    //Начинаем квн
-
 //начинаем перетаскивание объекта
 	dragStart(e) {
 		e.target.style.opacity = 0.4;
@@ -580,7 +575,7 @@ class KanbanItem {
 		e.preventDefault();
 
 		var dataGet = e.dataTransfer.getData('obj');
-		console.log("drop item", e);
+		console.log("drop item");
 
 		var dragObj = this.kanban.dragObj;
 		this.kanban.moveItem(dragObj.getId(), this.columnId, this.getId());
@@ -591,6 +586,8 @@ class KanbanItem {
 	}
 
 	dragEnter(e) {
+        console.log("dragEnter item");
+
 		e.preventDefault();
 		if(this.kanban.dragObj != this) {
 			this.layout.container.classList.add("add-border");
@@ -598,6 +595,8 @@ class KanbanItem {
 	}
 
 	dragEnd(e) {
+        console.log("dragEnd item");
+        
 		this.layout.container.style.opacity = 1;
 		this.layout.container.classList.remove("add-border");
 	}
