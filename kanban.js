@@ -177,6 +177,8 @@ class KanbanGrid {
         this.columns[sourceItem.columnId].render();
         futureColumn.render();
 
+        sourceItem.columnId = futureColumnId;
+
     	this.trigger('move', {
 /*    		sourceItem,
     		column,
@@ -270,7 +272,7 @@ class KanbanColumn {
         };
 
         this.kanban = null;
-
+        this.counter = 0;
     };
 
     //Установка обработчиков событий
@@ -331,7 +333,6 @@ class KanbanColumn {
 	}
 
     render() {
-
         if (!this.layout.container)
         {
             this.layout.container = document.createElement("div");
@@ -369,7 +370,10 @@ class KanbanColumn {
             this.layout.price.className = "kanban-column-price";
             this.layout.container.appendChild(this.layout.price);
 
-
+            this.layout.container.addEventListener('drop', this.drop.bind(this), false);
+            this.layout.container.addEventListener('dragenter', this.dragEnter.bind(this), false);
+            this.layout.container.addEventListener('dragleave', this.dragLeave.bind(this), false);
+            this.layout.container.addEventListener('dragover', this.dragOver.bind(this), false);
 
             this.initEvents();
         }
@@ -381,17 +385,6 @@ class KanbanColumn {
             this.layout.container.appendChild(item.render());
         }, this);
 
-        if(this.items.length == 0) {
-        	this.layout.container.addEventListener('drop', this.drop.bind(this), false);
-			this.layout.container.addEventListener('dragend', this.dragEnd.bind(this), false);
-			//this.layout.container.addEventListener('dragenter', this.dragEnter.bind(this), false);
-			this.layout.container.addEventListener('dragover', this.dragOver.bind(this), false);
-        }
-        this.layout.container.removeEventListener('drop', this.drop.bind(this), false);
-		this.layout.container.removeEventListener('dragend', this.dragEnd.bind(this), false);
-		//this.layout.container.removeEventListener('dragenter', this.dragEnter.bind(this), false);
-		this.layout.container.removeEventListener('dragover', this.dragOver.bind(this), false);
-
         return this.layout.container;
     }
 
@@ -401,10 +394,15 @@ class KanbanColumn {
         //записываем  в переменную id переносимого объекта
 		var data = e.dataTransfer.getData('obj');
 
-        console.log("drop column", this.id, data);
+        console.log("drop column");
+
 		this.kanban.moveItem(data, this.id);
 
     	kanban.items[data].layout.container.style.opacity = 1;
+        this.layout.container.style.cssText = "";
+
+        this.counter = 0;
+
     }
 
 	dragOver(e) {
@@ -415,7 +413,23 @@ class KanbanColumn {
 
     dragEnter(e) {
 		e.preventDefault();
-        console.log("dragEnter column", this.id);
+
+		this.counter++;
+
+        //console.log("dragEnter column", this.id);
+
+        this.layout.container.style.background = "#a4ecfd";
+    }
+
+    dragLeave(e) {
+		e.preventDefault();
+
+		this.counter--;
+		if (this.counter === 0)
+        {
+        	//console.log("dragLeave column", this.id);
+        	this.layout.container.style.cssText = "";
+        }
     }
 
     dragEnd(e){
@@ -482,6 +496,8 @@ class KanbanItem {
         };
 
         this.kanban = null;
+
+        this.counter = 0;
     }
 
     setKanbanGrid(kanban) {
@@ -556,9 +572,9 @@ class KanbanItem {
 		//устанавливаем тип действия и записываем данные переносимого объекта
 		e.dataTransfer.effectAllowed = 'move';
 
-		var idData = this.kanban.dragObj.getId();
-		e.dataTransfer.setData('obj', idData);
+		var data = this.kanban.dragObj.getId();
 
+		e.dataTransfer.setData('obj', data);
 	}
 
 	dragOver(e) {
@@ -568,37 +584,55 @@ class KanbanItem {
 	}
 
 	dragLeave(e) {
-		//this.layout.container.classList.toggle("add-border");
+
+		e.stopPropagation();
+		// console.log("drag leave", event);
+
+		this.counter--;
+
+		if (this.counter === 0)
+		{
+			this.layout.container.classList.remove("add-border");
+		}
+
+			// console.log("drag leave", this);
+	}
+
+	dragEnter(e) {
+
+		// console.log("drag enter", event);
+		this.counter++;
+
+		e.stopPropagation();
+		e.preventDefault();
+		if (this.kanban.dragObj != this && this.layout.container === e.target)
+		{
+			this.layout.container.classList.add("add-border");
+		}
+	}
+
+	dragEnd(e) {
+        // console.log("dragEnd item");
+
+		this.layout.container.style.opacity = 1;
+		this.layout.container.classList.remove("add-border");
 	}
 
 	drop(e) {
 		e.preventDefault();
 
 		var dataGet = e.dataTransfer.getData('obj');
-		console.log("drop item");
+		//console.log("drop item");
 
 		var dragObj = this.kanban.dragObj;
 		this.kanban.moveItem(dragObj.getId(), this.columnId, this.getId());
-		
+
 		this.kanban.dragObj.layout.container.style.opacity = 1;
 		this.layout.container.classList.remove("add-border");
+
+		this.counter = 0;
+
 		return false;
-	}
-
-	dragEnter(e) {
-        console.log("dragEnter item");
-
-		e.preventDefault();
-		if(this.kanban.dragObj != this) {
-			this.layout.container.classList.add("add-border");
-		}
-	}
-
-	dragEnd(e) {
-        console.log("dragEnd item");
-        
-		this.layout.container.style.opacity = 1;
-		this.layout.container.classList.remove("add-border");
 	}
 
 }
