@@ -179,6 +179,8 @@ class KanbanGrid {
 
         sourceItem.columnId = futureColumnId;
 
+        console.log(sourceItemId, futureColumnId, beforeItemId);
+
     	this.trigger('move', {
 /*    		sourceItem,
     		column,
@@ -394,9 +396,11 @@ class KanbanColumn {
         //записываем  в переменную id переносимого объекта
 		var data = e.dataTransfer.getData('obj');
 
-        console.log("drop column");
+        console.log("drop column", e.target);
 
-		this.kanban.moveItem(data, this.id);
+        if(e.target.classList.contains("kanban-column")) {
+        	this.kanban.moveItem(data, this.id);
+        }
 
     	kanban.items[data].layout.container.style.opacity = 1;
         this.layout.container.style.cssText = "";
@@ -415,9 +419,6 @@ class KanbanColumn {
 		e.preventDefault();
 
 		this.counter++;
-
-        //console.log("dragEnter column", this.id);
-
         this.layout.container.style.background = "#a4ecfd";
     }
 
@@ -622,7 +623,7 @@ class KanbanItem {
 		e.preventDefault();
 
 		var dataGet = e.dataTransfer.getData('obj');
-		//console.log("drop item");
+		console.log(dataGet);
 
 		var dragObj = this.kanban.dragObj;
 		this.kanban.moveItem(dragObj.getId(), this.columnId, this.getId());
