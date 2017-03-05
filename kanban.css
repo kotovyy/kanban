@@ -55,7 +55,10 @@ body {
 	border-left: 4px solid #acf2fa;
 	border-radius: 3px;
 	cursor: pointer;
-	margin-bottom: 5px;
+}
+
+.kanban-empty-block {
+	height: 5px;
 }
 
 /* .kanban-item::after {

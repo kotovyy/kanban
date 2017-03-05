@@ -179,8 +179,6 @@ class KanbanGrid {
 
         sourceItem.columnId = futureColumnId;
 
-        console.log(sourceItemId, futureColumnId, beforeItemId);
-
     	this.trigger('move', {
 /*    		sourceItem,
     		column,
@@ -396,9 +394,7 @@ class KanbanColumn {
         //записываем  в переменную id переносимого объекта
 		var data = e.dataTransfer.getData('obj');
 
-        console.log("drop column", e.target);
-
-        if(e.target.classList.contains("kanban-column")) {
+        if(e.target.classList.contains("kanban-column") || e.target.classList.contains("kanban-column-price")) {
         	this.kanban.moveItem(data, this.id);
         }
 
@@ -493,7 +489,9 @@ class KanbanItem {
             price: null,
             author: null,
             authorLink: null,
-            date: null
+            date: null,
+            item: null,
+            emptyBlock: null
         };
 
         this.kanban = null;
@@ -522,21 +520,29 @@ class KanbanItem {
     	}
 
     	this.layout.container = document.createElement("div");
-    	this.layout.container.className = "kanban-item";
+    	//this.layout.container.className = "kanban-item";
+
+       	this.layout.item = document.createElement("div");
+    	this.layout.item.className = "kanban-item";
+    	this.layout.container.appendChild(this.layout.item);
+
+		this.layout.emptyBlock = document.createElement("div");
+    	this.layout.emptyBlock.className = "kanban-empty-block";
+    	this.layout.container.appendChild(this.layout.emptyBlock);
 
     	this.layout.name = document.createElement("div");
     	this.layout.name.className = "kanban-item-name";
     	this.layout.name.textContent = this.name;
-    	this.layout.container.appendChild(this.layout.name);
+    	this.layout.item.appendChild(this.layout.name);
 
     	this.layout.price = document.createElement("div");
     	this.layout.price.className = "kanban-item-price";
     	this.layout.price.textContent = this.price;
-    	this.layout.container.appendChild(this.layout.price);
+    	this.layout.item.appendChild(this.layout.price);
 
     	this.layout.author = document.createElement("div");
     	this.layout.author.className = "kanban-item-author";
-    	this.layout.container.appendChild(this.layout.author);
+    	this.layout.item.appendChild(this.layout.author);
 
     	this.layout.authorLink = document.createElement("a");
     	this.layout.authorLink.className = "kanban-item-author-link";
@@ -546,7 +552,7 @@ class KanbanItem {
     	this.layout.date = document.createElement("div");
     	this.layout.date.className = "kanban-item-date";
     	this.layout.date.textContent = this.date;
-    	this.layout.container.appendChild(this.layout.date);
+    	this.layout.item.appendChild(this.layout.date);
 
 		this.layout.container.addEventListener('dragstart', this.dragStart.bind(this), false);
 		this.layout.container.addEventListener('dragover', this.dragOver.bind(this), false);
@@ -569,6 +575,7 @@ class KanbanItem {
 //начинаем перетаскивание объекта
 	dragStart(e) {
 		e.target.style.opacity = 0.4;
+
 		this.kanban.dragObj = this;
 		//устанавливаем тип действия и записываем данные переносимого объекта
 		e.dataTransfer.effectAllowed = 'move';
@@ -585,38 +592,30 @@ class KanbanItem {
 	}
 
 	dragLeave(e) {
-
 		e.stopPropagation();
-		// console.log("drag leave", event);
-
 		this.counter--;
 
 		if (this.counter === 0)
 		{
-			this.layout.container.classList.remove("add-border");
+			this.layout.item.classList.remove("add-border");
 		}
-
-			// console.log("drag leave", this);
 	}
 
 	dragEnter(e) {
 
-		// console.log("drag enter", event);
 		this.counter++;
 
 		e.stopPropagation();
 		e.preventDefault();
-		if (this.kanban.dragObj != this && this.layout.container === e.target)
+		if (this.kanban.dragObj != this && this.layout.item === e.target)
 		{
-			this.layout.container.classList.add("add-border");
+			this.layout.item.classList.add("add-border");
 		}
 	}
 
 	dragEnd(e) {
-        // console.log("dragEnd item");
-
-		this.layout.container.style.opacity = 1;
-		this.layout.container.classList.remove("add-border");
+		this.layout.item.style.opacity = 1;
+		this.layout.item.classList.remove("add-border");
 	}
 
 	drop(e) {
@@ -629,7 +628,7 @@ class KanbanItem {
 		this.kanban.moveItem(dragObj.getId(), this.columnId, this.getId());
 
 		this.kanban.dragObj.layout.container.style.opacity = 1;
-		this.layout.container.classList.remove("add-border");
+		this.layout.item.classList.remove("add-border");
 
 		this.counter = 0;
 
